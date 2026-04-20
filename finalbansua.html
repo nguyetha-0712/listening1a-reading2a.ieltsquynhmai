@@ -1,0 +1,1020 @@
+<!doctype html>
+<html lang="vi" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IELTS Vocabulary Game</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+  <style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'Be Vietnam Pro', sans-serif; }
+
+.app-wrapper {
+  width: 100%; height: 100%; overflow-y: auto;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  color: #e2e8f0;
+}
+
+.card-glass {
+  background: rgba(30, 41, 59, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 16px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white; border: none; border-radius: 12px;
+  padding: 12px 24px; font-weight: 600; cursor: pointer;
+  transition: all 0.2s; font-family: inherit;
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(99,102,241,0.4); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.btn-secondary {
+  background: rgba(99, 102, 241, 0.15);
+  color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3);
+  border-radius: 12px; padding: 10px 20px; font-weight: 500;
+  cursor: pointer; transition: all 0.2s; font-family: inherit;
+}
+.btn-secondary:hover { background: rgba(99,102,241,0.25); }
+.btn-secondary.playing {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: #22c55e;
+  color: #4ade80;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.option-btn {
+  background: rgba(30, 41, 59, 0.6);
+  border: 2px solid rgba(99,102,241,0.2);
+  border-radius: 12px; padding: 14px 20px;
+  color: #e2e8f0; cursor: pointer; transition: all 0.2s;
+  text-align: left; font-family: inherit; font-size: 15px; width: 100%;
+}
+.option-btn:hover { border-color: #6366f1; background: rgba(99,102,241,0.1); }
+.option-btn.correct { border-color: #22c55e; background: rgba(34,197,94,0.15); color: #4ade80; }
+.option-btn.wrong { border-color: #ef4444; background: rgba(239,68,68,0.15); color: #f87171; }
+.option-btn:disabled { cursor: default; }
+
+.text-input {
+  background: rgba(15, 23, 42, 0.8);
+  border: 2px solid rgba(99,102,241,0.3);
+  border-radius: 12px; padding: 14px 18px;
+  color: #e2e8f0; font-size: 16px; width: 100%;
+  font-family: inherit; outline: none; transition: border-color 0.2s;
+}
+.text-input:focus { border-color: #6366f1; }
+.text-input.correct { border-color: #22c55e; }
+.text-input.wrong { border-color: #ef4444; }
+
+.progress-bar { background: rgba(99,102,241,0.15); border-radius: 99px; height: 8px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, #6366f1, #8b5cf6); transition: width 0.4s; }
+
+.streak-badge {
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  color: white; border-radius: 99px; padding: 4px 12px;
+  font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 4px;
+}
+
+.explanation-box {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(99,102,241,0.15);
+  border-radius: 12px; padding: 20px;
+  margin-top: 16px; font-size: 14px; line-height: 1.8;
+}
+.explanation-box .label { color: #818cf8; font-weight: 600; }
+.explanation-box .ipa { color: #a78bfa; font-family: 'JetBrains Mono', monospace; }
+
+.menu-btn {
+  position: fixed; top: 16px; left: 16px; z-index: 50;
+  background: rgba(30,41,59,0.9); border: 1px solid rgba(99,102,241,0.3);
+  border-radius: 12px; padding: 8px 14px; color: #a5b4fc;
+  cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500;
+  display: flex; align-items: center; gap: 6px; transition: all 0.2s;
+}
+.menu-btn:hover { background: rgba(99,102,241,0.2); }
+
+.fade-in { animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+.shake { animation: shake 0.4s ease; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+
+.pulse { animation: pulse 0.5s ease; }
+@keyframes pulse { 0%{transform:scale(1)} 50%{transform:scale(1.05)} 100%{transform:scale(1)} }
+
+.firework {
+  position: fixed; pointer-events: none; z-index: 999;
+  animation: burst 0.8s ease-out forwards;
+}
+@keyframes burst {
+  0% { opacity: 1; transform: translate(0, 0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(0); }
+}
+
+.sparkle {
+  position: fixed; pointer-events: none; z-index: 998;
+  animation: sparkle 1s ease-out forwards;
+}
+@keyframes sparkle {
+  0% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0); }
+}
+
+.confetti {
+  position: fixed; pointer-events: none; z-index: 999;
+  animation: fall 2s ease-in forwards;
+}
+@keyframes fall {
+  to { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+}
+
+.glow-pulse {
+  animation: glowPulse 0.6s ease;
+}
+@keyframes glowPulse {
+  0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.7); }
+  70% { box-shadow: 0 0 0 20px rgba(34,197,94,0); }
+  100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+}
+
+.correct-answer-animation {
+  animation: correctFloat 0.8s ease forwards;
+}
+@keyframes correctFloat {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-40px) scale(1.2); }
+}
+
+.card-hover:hover {
+  transform: translateY(-6px) !important;
+  box-shadow: 0 20px 50px rgba(99,102,241,0.3) !important;
+}
+
+.part-card {
+  background: rgba(30,41,59,0.6);
+  border: 2px solid rgba(99,102,241,0.15);
+  border-radius: 16px; padding: 24px; cursor: pointer;
+  transition: all 0.3s; position: relative; overflow: hidden;
+}
+.part-card:hover { border-color: #6366f1; transform: translateY(-4px); box-shadow: 0 12px 40px rgba(99,102,241,0.2); }
+.part-card .part-num {
+  position: absolute; top: -10px; right: -10px;
+  font-size: 80px; font-weight: 800; color: rgba(99,102,241,0.08);
+}
+
+.timer-bar { height: 4px; background: rgba(99,102,241,0.15); border-radius: 99px; overflow: hidden; }
+.timer-fill { height: 100%; background: linear-gradient(90deg, #22c55e, #eab308, #ef4444); transition: width 0.1s linear; }
+
+.toast {
+  position: fixed; top: 20px; right: 20px; z-index: 100;
+  padding: 12px 20px; border-radius: 12px; font-weight: 600;
+  animation: slideIn 0.3s ease, fadeOut 0.3s ease 1.5s forwards;
+}
+@keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes fadeOut { to { opacity: 0; transform: translateY(-20px); } }
+
+.result-word {
+  display: inline-block; padding: 4px 10px; border-radius: 8px;
+  margin: 3px; font-size: 13px; font-weight: 500;
+}
+.result-word.correct-word { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+.result-word.wrong-word { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+ </head>
+ <body class="h-full">
+  <div class="app-wrapper" id="app">
+   <button class="menu-btn" id="menuBtn" onclick="showMenu()" style="display:none"> <i data-lucide="home" style="width:16px;height:16px"></i> Menu </button>
+   <div id="screen"></div>
+   <div id="toast-container"></div>
+  </div>
+  <script>
+document.addEventListener("DOMContentLoaded", function() {
+// ============ VOCABULARY DATA ============
+const WORDS = [
+  { en: "adaptive", vi: "có khả năng thích nghi", pos: "adj", ipa: "/əˈdæptɪv/", meaningEn: "able to adjust to new conditions", synonyms: "flexible, versatile, adjustable", antonyms: "rigid, inflexible", wordFamily: "adapt (v), adaptation (n), adaptable (adj)", collocations: "adaptive behavior, adaptive learning, adaptive strategy", example: "Adaptive learning systems personalize education for each student." },
+  { en: "badly-off", vi: "nghèo; thiếu thốn", pos: "adj", ipa: "/ˌbædli ˈɒf/", meaningEn: "poor; lacking money or resources", synonyms: "impoverished, deprived, disadvantaged", antonyms: "well-off, affluent, wealthy", wordFamily: "badly (adv)", collocations: "badly-off families, badly-off areas", example: "Many badly-off families struggle to afford basic necessities." },
+  { en: "blasted/bloody", vi: "chết tiệt (darn/damn)", pos: "adj", ipa: "/ˈblɑːstɪd/ /ˈblʌdi/", meaningEn: "used to express annoyance (informal)", synonyms: "damn, darn, wretched", antonyms: "—", wordFamily: "blast (n/v), blood (n), bloody (adv)", collocations: "blasted thing, bloody mess", example: "This blasted machine has broken down again!" },
+  { en: "defective", vi: "có lỗi", pos: "adj", ipa: "/dɪˈfektɪv/", meaningEn: "having a fault or flaw; not working properly", synonyms: "faulty, flawed, malfunctioning", antonyms: "perfect, flawless", wordFamily: "defect (n/v), defectively (adv)", collocations: "defective product, defective equipment", example: "The company recalled all defective products from the market." },
+  { en: "introductory", vi: "mở đầu; giới thiệu", pos: "adj", ipa: "/ˌɪntrəˈdʌktəri/", meaningEn: "serving as an introduction; basic", synonyms: "preliminary, opening, initial", antonyms: "advanced, concluding", wordFamily: "introduce (v), introduction (n)", collocations: "introductory course, introductory offer, introductory chapter", example: "The introductory chapter provides an overview of the main themes." },
+  { en: "underrepresented", vi: "thiểu số; thiếu người đại diện", pos: "adj", ipa: "/ˌʌndərˌreprɪˈzentɪd/", meaningEn: "not having enough representatives", synonyms: "marginalized, underserved", antonyms: "overrepresented, dominant", wordFamily: "represent (v), representation (n), representative (n/adj)", collocations: "underrepresented groups, underrepresented communities", example: "Underrepresented communities often lack access to quality education." },
+  { en: "well-off", vi: "giàu; đủ đầy", pos: "adj", ipa: "/ˌwel ˈɒf/", meaningEn: "wealthy; having plenty of money", synonyms: "affluent, prosperous, rich", antonyms: "badly-off, poor, deprived", wordFamily: "well (adv)", collocations: "well-off families, well-off neighborhood", example: "Well-off families tend to have better access to healthcare." },
+  { en: "be adapted into a movie", vi: "được chuyển thể thành phim", pos: "phrase", ipa: "/bi əˈdæptɪd ˈɪntuː ə ˈmuːvi/", meaningEn: "to be changed from one form (e.g., a book) into a film", synonyms: "be turned into a film, be made into a movie", antonyms: "—", wordFamily: "adapt (v), adaptation (n), adaptive (adj)", collocations: "adapted into a movie, adapted from a novel", example: "The bestselling novel was adapted into a movie that won several awards." },
+  { en: "in this/that regard/respect", vi: "ở khía cạnh này/đó", pos: "phrase", ipa: "/ɪn ðɪs rɪˈɡɑːrd/", meaningEn: "concerning this/that particular point or aspect", synonyms: "in this matter, in this aspect, concerning this", antonyms: "—", wordFamily: "regard (n/v), respect (n/v), regarding (prep)", collocations: "in this regard, in that respect, with regard to", example: "The policy has been effective in this regard, reducing emissions by 20%." },
+  { en: "adaptation", vi: "sự thích nghi; phim chuyển thể", pos: "n", ipa: "/ˌædæpˈteɪʃən/", meaningEn: "the process of adjusting; a movie/play based on a book", synonyms: "adjustment, modification, version", antonyms: "rigidity, original", wordFamily: "adapt (v), adaptive (adj), adaptable (adj)", collocations: "film adaptation, adaptation to climate, cultural adaptation", example: "The adaptation of the novel received critical acclaim." },
+  { en: "beverage", vi: "đồ uống", pos: "n", ipa: "/ˈbevərɪdʒ/", meaningEn: "a drink, especially one other than water", synonyms: "drink, refreshment", antonyms: "—", wordFamily: "—", collocations: "alcoholic beverage, hot beverage, beverage industry", example: "The restaurant offers a wide selection of beverages." },
+  { en: "birth defect", vi: "dị tật bẩm sinh", pos: "n", ipa: "/bɜːθ dɪˈfekt/", meaningEn: "a physical or biochemical abnormality present at birth", synonyms: "congenital defect, congenital abnormality", antonyms: "—", wordFamily: "birth (n), defect (n), defective (adj)", collocations: "birth defect screening, common birth defects", example: "Advances in medicine have helped reduce the incidence of birth defects." },
+  { en: "boundary", vi: "ranh giới; biên giới", pos: "n", ipa: "/ˈbaʊndəri/", meaningEn: "a line that marks the limits of an area", synonyms: "border, limit, frontier", antonyms: "interior, center", wordFamily: "bound (n/v/adj), bounded (adj)", collocations: "set boundaries, national boundary, boundary line", example: "The river forms a natural boundary between the two countries." },
+  { en: "character defect", vi: "khiếm khuyết về tính cách", pos: "n", ipa: "/ˈkærɪktər dɪˈfekt/", meaningEn: "a flaw in someone's personality or moral qualities", synonyms: "character flaw, personality flaw, shortcoming", antonyms: "virtue, strength", wordFamily: "character (n), defect (n), defective (adj)", collocations: "overcome a character defect, identify character defects", example: "Self-awareness is the first step in addressing character defects." },
+  { en: "corridor", vi: "hành lang", pos: "n", ipa: "/ˈkɒrɪdɔːr/", meaningEn: "a long passage in a building", synonyms: "hallway, passageway, aisle", antonyms: "—", wordFamily: "—", collocations: "narrow corridor, long corridor, hospital corridor", example: "Students walked quickly through the corridor between classes." },
+  { en: "crossroads", vi: "ngã tư", pos: "n", ipa: "/ˈkrɒsrəʊdz/", meaningEn: "a place where two roads cross; a crucial point", synonyms: "intersection, junction, turning point", antonyms: "—", wordFamily: "cross (v/n/adj), road (n)", collocations: "at a crossroads, reach a crossroads", example: "The country is at a crossroads in terms of its environmental policy." },
+  { en: "defect", vi: "lỗi (sản xuất)", pos: "n", ipa: "/ˈdiːfekt/", meaningEn: "a shortcoming, fault, or imperfection", synonyms: "flaw, fault, imperfection", antonyms: "perfection, strength", wordFamily: "defective (adj), defectively (adv)", collocations: "manufacturing defect, design defect, structural defect", example: "A small defect in the product led to a massive recall." },
+  { en: "exterior", vi: "ngoại thất", pos: "n", ipa: "/ɪkˈstɪəriər/", meaningEn: "the outer surface or appearance of something", synonyms: "outside, outer surface, façade", antonyms: "interior, inside", wordFamily: "external (adj), externally (adv)", collocations: "building exterior, exterior design, exterior wall", example: "The exterior of the building was renovated last year." },
+  { en: "façade", vi: "mặt tiền; bộ mặt giả tạo", pos: "n", ipa: "/fəˈsɑːd/", meaningEn: "the front of a building; a deceptive outward appearance", synonyms: "front, frontage, pretense", antonyms: "reality, truth, interior", wordFamily: "—", collocations: "building façade, put up a façade, behind the façade", example: "Behind the cheerful façade, the company was struggling financially." },
+  { en: "interior", vi: "nội thất", pos: "n", ipa: "/ɪnˈtɪəriər/", meaningEn: "the inner part of something", synonyms: "inside, inner part", antonyms: "exterior, outside", wordFamily: "internal (adj), internally (adv)", collocations: "interior design, interior decoration, car interior", example: "The interior of the museum was beautifully decorated." },
+  { en: "intersection/junction", vi: "giao lộ (ngã ba, ngã tư...)", pos: "n", ipa: "/ˌɪntəˈsekʃən/ /ˈdʒʌŋkʃən/", meaningEn: "a point where two or more roads meet", synonyms: "crossroads, crossing, meeting point", antonyms: "—", wordFamily: "intersect (v), join (v), juncture (n)", collocations: "busy intersection, traffic junction, road junction", example: "There was a serious accident at the intersection of Main Street and Oak Avenue." },
+  { en: "path/footpath", vi: "đường mòn; không tên", pos: "n", ipa: "/pɑːθ/ /ˈfʊtpɑːθ/", meaningEn: "a way or track for walking", synonyms: "trail, walkway, track", antonyms: "highway, motorway", wordFamily: "pathway (n)", collocations: "garden path, coastal footpath, narrow path", example: "We followed a winding path through the forest." },
+  { en: "refreshment", vi: "đồ giải khát", pos: "n", ipa: "/rɪˈfreʃmənt/", meaningEn: "food and drink; the act of refreshing", synonyms: "snack, drink, beverage", antonyms: "—", wordFamily: "refresh (v), refreshing (adj)", collocations: "light refreshments, refreshment stand, serve refreshments", example: "Light refreshments will be served during the intermission." },
+  { en: "roundabout", vi: "bùng binh; vòng xuyến", pos: "n", ipa: "/ˈraʊndəbaʊt/", meaningEn: "a circular road junction; an indirect route", synonyms: "traffic circle, rotary", antonyms: "—", wordFamily: "round (adj/n/v), about (prep/adv)", collocations: "mini roundabout, at the roundabout, go around the roundabout", example: "Take the second exit at the roundabout to reach the city center." },
+  { en: "soft drink", vi: "nước ngọt", pos: "n", ipa: "/sɒft drɪŋk/", meaningEn: "a non-alcoholic drink, typically carbonated", synonyms: "soda, fizzy drink, pop", antonyms: "alcoholic drink, hard drink", wordFamily: "soft (adj), drink (n/v)", collocations: "fizzy soft drink, diet soft drink, soft drink consumption", example: "The consumption of soft drinks has been linked to health issues." },
+  { en: "bend/curve", vi: "khúc cua; ngoặt", pos: "n/v", ipa: "/bend/ /kɜːv/", meaningEn: "a turn or curve in a road or river", synonyms: "turn, twist, arc", antonyms: "straight, straightaway", wordFamily: "bending (adj), curved (adj), curvature (n)", collocations: "sharp bend, round the bend, gentle curve", example: "Slow down when approaching a sharp bend in the road." },
+  { en: "fork", vi: "ngã ba; chia nhánh", pos: "n/v", ipa: "/fɔːk/", meaningEn: "a place where a road divides into two", synonyms: "branch, split, division", antonyms: "merge, convergence", wordFamily: "forked (adj)", collocations: "fork in the road, left fork, fork off", example: "When you reach the fork in the road, take the left path." },
+  { en: "warranty", vi: "bảo hành", pos: "n", ipa: "/ˈwɒrənti/", meaningEn: "a written guarantee for repair or replacement", synonyms: "guarantee, assurance", antonyms: "—", wordFamily: "warrant (n/v)", collocations: "under warranty, warranty period, extend the warranty", example: "The laptop comes with a two-year warranty." },
+  { en: "winding road", vi: "đường ngoằn ngoèo", pos: "n", ipa: "/ˈwaɪndɪŋ rəʊd/", meaningEn: "a road with many turns and curves", synonyms: "twisting road, serpentine road, meandering road", antonyms: "straight road", wordFamily: "wind (v), winding (adj)", collocations: "narrow winding road, steep winding road", example: "The winding road through the mountains offered breathtaking views." },
+  { en: "demand a refund", vi: "yêu cầu hoàn tiền", pos: "v", ipa: "/dɪˈmɑːnd ə rɪˈfʌnd/", meaningEn: "to insist on getting money back", synonyms: "request reimbursement, ask for money back", antonyms: "accept, pay", wordFamily: "demand (n/v), refund (n/v)", collocations: "demand a full refund, demand an immediate refund", example: "Dissatisfied customers have the right to demand a refund." },
+  { en: "enroll on/in", vi: "đăng ký; ghi danh", pos: "v", ipa: "/ɪnˈrəʊl/", meaningEn: "to officially register for a course or program", synonyms: "register, sign up, join", antonyms: "withdraw, drop out", wordFamily: "enrollment (n), enrollee (n)", collocations: "enroll in a course, enroll on a program", example: "She decided to enroll in an IELTS preparation course." },
+  { en: "explode", vi: "nổ", pos: "v", ipa: "/ɪkˈspləʊd/", meaningEn: "to burst or blow up violently", synonyms: "blow up, detonate, burst", antonyms: "implode", wordFamily: "explosion (n), explosive (adj/n)", collocations: "bomb exploded, population exploded, explode with anger", example: "The population of the city exploded in the last decade." },
+  { en: "get hot under the collar", vi: "mất bình tĩnh", pos: "v", ipa: "/ɡet hɒt ˈʌndə ðə ˈkɒlər/", meaningEn: "to become angry or agitated", synonyms: "get angry, lose one's temper, become furious", antonyms: "stay calm, keep cool", wordFamily: "hot (adj), collar (n)", collocations: "get hot under the collar about something", example: "He got hot under the collar when the delivery was late again." },
+  { en: "lose smb's temper", vi: "mất bình tĩnh", pos: "v", ipa: "/luːz ˈtempər/", meaningEn: "to suddenly become very angry", synonyms: "blow up, fly off the handle, snap", antonyms: "keep one's temper, stay calm", wordFamily: "temper (n), temperament (n), tempered (adj)", collocations: "lose one's temper with, lose temper easily", example: "She rarely loses her temper, even in stressful situations." },
+  { en: "overcome a problem", vi: "vượt qua; giải quyết vấn đề", pos: "v", ipa: "/ˌəʊvəˈkʌm ə ˈprɒbləm/", meaningEn: "to succeed in dealing with a difficulty", synonyms: "solve, resolve, conquer, tackle", antonyms: "surrender, give up", wordFamily: "overcome (v), overcoming (adj)", collocations: "overcome challenges, overcome obstacles, overcome difficulties", example: "The team worked together to overcome the problem of limited resources." },
+  { en: "refurbish/renovate/revamp", vi: "tân trang; sửa chữa", pos: "v", ipa: "/ˌriːˈfɜːbɪʃ/ /ˈrenəveɪt/", meaningEn: "to make something look new again by repairing", synonyms: "restore, remodel, upgrade", antonyms: "demolish, destroy, neglect", wordFamily: "refurbishment (n), renovation (n), revamp (n)", collocations: "refurbish a building, renovate a house, revamp a website", example: "The council decided to renovate the old library building." },
+  { en: "scald smb", vi: "gây bỏng (bằng nước)", pos: "v", ipa: "/skɔːld/", meaningEn: "to burn with hot liquid or steam", synonyms: "burn, sear", antonyms: "cool, soothe", wordFamily: "scald (n), scalding (adj)", collocations: "scald with boiling water, scalding hot", example: "Be careful not to scald yourself with the boiling water." },
+  { en: "set a boundary", vi: "đặt ranh giới", pos: "v", ipa: "/set ə ˈbaʊndəri/", meaningEn: "to establish a limit or rule", synonyms: "establish limits, draw a line, define limits", antonyms: "remove boundaries, blur lines", wordFamily: "set (v), boundary (n), bounded (adj)", collocations: "set clear boundaries, set personal boundaries", example: "It is important to set boundaries in professional relationships." },
+  { en: "take actions/measures/steps", vi: "thực hiện hành động/giải pháp", pos: "v", ipa: "/teɪk ˈækʃənz/", meaningEn: "to perform concrete actions or implement solutions", synonyms: "implement, undertake, perform", antonyms: "neglect, ignore, avoid", wordFamily: "action (n), act (v)", collocations: "take immediate action, take drastic measures, take concrete steps", example: "The government took swift action to address the crisis." },
+  { en: "eradicate poverty", vi: "xóa nghèo", pos: "v", ipa: "/ɪˈrædɪkeɪt ˈpɒvərti/", meaningEn: "to completely eliminate poverty from society", synonyms: "eliminate, abolish, root out", antonyms: "perpetuate, maintain, sustain", wordFamily: "eradicate (v), eradication (n)", collocations: "eradicate disease, eradicate poverty, eradicate discrimination", example: "International organizations are working to eradicate world poverty." },
+  { en: "lift someone out of poverty", vi: "kéo ai thoát khỏi đói nghèo", pos: "v", ipa: "/lɪft ˈsʌmwʌn aʊt əv ˈpɒvərti/", meaningEn: "to help someone escape poverty through opportunities or support", synonyms: "help escape poverty, enable advancement, empower", antonyms: "plunge into poverty, trap in poverty", wordFamily: "lift (v), poverty (n)", collocations: "lift out of poverty, lifted from poverty", example: "Education can lift millions of people out of poverty." },
+  { en: "break the shackles of poverty", vi: "phá vỡ vòng luẩn quẩn của đói nghèo", pos: "v", ipa: "/breɪk ðə ˈʃækəlz əv ˈpɒvərti/", meaningEn: "to escape the constraints and cycle of poverty", synonyms: "escape poverty, overcome hardship, break free", antonyms: "remain trapped, perpetuate cycle", wordFamily: "break (v), shackle (n)", collocations: "break chains, break free, break the cycle", example: "Many aspire to break the shackles of poverty through education." },
+  { en: "impoverished", vi: "nghèo", pos: "adj", ipa: "/ɪmˈpɒvərɪʃd/", meaningEn: "very poor, lacking money and basic necessities", synonyms: "poor, destitute, needy", antonyms: "wealthy, affluent, rich", wordFamily: "impoverish (v), impoverishment (n)", collocations: "impoverished communities, impoverished countries, impoverished populations", example: "Many impoverished nations struggle with economic development." },
+  { en: "poverty-stricken", vi: "nghèo", pos: "adj", ipa: "/ˈpɒvərti ˈstrɪkən/", meaningEn: "extremely poor, affected deeply by poverty", synonyms: "impoverished, destitute, poor", antonyms: "wealthy, prosperous, affluent", wordFamily: "poverty (n), strike (v)", collocations: "poverty-stricken areas, poverty-stricken families", example: "The poverty-stricken region desperately needs economic support." },
+  { en: "environmental degradation", vi: "sự suy giảm chất lượng môi trường", pos: "n", ipa: "/ɪnˌvaɪrənˈmentəl ˌdeɡrəˈdeɪʃən/", meaningEn: "the decline in environmental quality due to human activities", synonyms: "environmental damage, ecological decline", antonyms: "environmental conservation, preservation", wordFamily: "degrade (v), degradation (n), environment (n)", collocations: "environmental degradation, prevent degradation, reverse degradation", example: "Climate change is causing severe environmental degradation worldwide." },
+  { en: "conceive of something", vi: "tưởng tượng; hình dung", pos: "v", ipa: "/kənˈsiːv əv ˈsʌmθɪŋ/", meaningEn: "to form an idea or mental image of something", synonyms: "imagine, envision, picture", antonyms: "dismiss, reject, discard", wordFamily: "conceive (v), concept (n), conception (n)", collocations: "conceive of an idea, conceive of a solution", example: "It's difficult to conceive of a world without technology." },
+  { en: "conceive a plan/idea", vi: "hình thành; lên kế hoạch", pos: "v", ipa: "/kənˈsiːv ə plæn/", meaningEn: "to develop or formulate a plan or idea", synonyms: "devise, formulate, create", antonyms: "abandon, discard, reject", wordFamily: "conceive (v), concept (n), conception (n)", collocations: "conceive a plan, conceive an idea, conceive a strategy", example: "She conceived a brilliant marketing plan for the product launch." },
+  { en: "abolish something", vi: "bãi bỏ (chính sách/hệ thống)", pos: "v", ipa: "/əˈbɒlɪʃ ˈsʌmθɪŋ/", meaningEn: "to officially end or stop the operation of something", synonyms: "eliminate, end, eradicate", antonyms: "establish, introduce, institute", wordFamily: "abolish (v), abolition (n), abolitionist (n)", collocations: "abolish slavery, abolish a law, abolish the system", example: "Many countries have abolished capital punishment in recent decades." },
+  { en: "culprit", vi: "thủ phạm", pos: "n", ipa: "/ˈkʌlprɪt/", meaningEn: "a person guilty of a crime or wrongdoing", synonyms: "offender, perpetrator, guilty party", antonyms: "innocent, victim", wordFamily: "culpable (adj), culpability (n)", collocations: "identify the culprit, catch the culprit, the main culprit", example: "Police finally identified the culprit responsible for the robberies." },
+  { en: "curb the growth/effects", vi: "kiểm soát; ngăn chặn", pos: "v", ipa: "/kɜːb ðə ɡroʊθ əv ɪˈfekts/", meaningEn: "to limit, control, or reduce the expansion or impact of something", synonyms: "limit, control, restrict", antonyms: "accelerate, promote, encourage", wordFamily: "curb (v/n), curbing (adj)", collocations: "curb inflation, curb emissions, curb spending", example: "Governments are trying to curb the spread of the disease." },
+  { en: "put/place emphasis on something", vi: "chú trọng vào", pos: "v", ipa: "/pʊt ˈemfəsɪs ɒn ˈsʌmθɪŋ/", meaningEn: "to give special importance or attention to something", synonyms: "highlight, stress, focus on", antonyms: "ignore, downplay, neglect", wordFamily: "emphasis (n), emphasize (v), emphatic (adj)", collocations: "place emphasis on quality, put emphasis on education", example: "The curriculum places great emphasis on practical skills." },
+  { en: "man-made/artificial/synthetic", vi: "nhân tạo", pos: "adj", ipa: "/ˈmænmeɪd/ /ɑːrˈtɪfɪʃəl/ /sɪnˈθetɪk/", meaningEn: "created or manufactured by humans rather than occurring naturally", synonyms: "artificial, fabricated, human-made", antonyms: "natural, organic, genuine", wordFamily: "make (v), art (n), synthetic (adj)", collocations: "man-made disaster, artificial intelligence, synthetic materials", example: "The beach was lined with man-made structures and artificial vegetation." },
+  { en: "launch someone on a career", vi: "là bệ phóng cho sự nghiệp", pos: "v", ipa: "/lɔːntʃ ˈsʌmwʌn ɒn ə kəˈrɪr/", meaningEn: "to help someone begin their professional career", synonyms: "start, initiate, begin", antonyms: "end, terminate, stop", wordFamily: "launch (v), career (n)", collocations: "launch a career, launched their careers", example: "The award launched her career as an international actress." },
+  { en: "launch a product/campaign", vi: "tung ra sản phẩm/chiến dịch", pos: "v", ipa: "/lɔːntʃ ə ˈprɒdʌkt/ /kæmˈpeɪn/", meaningEn: "to introduce and release a new product or promotional campaign publicly", synonyms: "release, introduce, unveil", antonyms: "withdraw, cancel, recall", wordFamily: "launch (v), product (n), campaign (n)", collocations: "launch a product, launch a campaign, launch a business", example: "The company launched a new smartphone and marketing campaign simultaneously." },
+  { en: "launch a satellite", vi: "phóng vệ tinh", pos: "v", ipa: "/lɔːntʃ ə ˈsætəlaɪt/", meaningEn: "to send a satellite into space, usually via rocket", synonyms: "send into orbit, deploy, dispatch", antonyms: "recover, retrieve, bring down", wordFamily: "launch (v), satellite (n)", collocations: "launch satellite, successful launch, launch vehicle", example: "SpaceX successfully launched a communications satellite into orbit." },
+  { en: "bizarre/odd/strange/peculiar", vi: "lạ, kì; kỳ lạ", pos: "adj", ipa: "/bɪˈzɑːr/ /ɒd/ /streɪndʒ/ /pɪˈkjuːliər/", meaningEn: "very unusual or strange; out of the ordinary", synonyms: "unusual, curious, extraordinary", antonyms: "normal, ordinary, common", wordFamily: "bizarreness (n), oddity (n), strangeness (n)", collocations: "bizarre behavior, strange coincidence, peculiar habit", example: "His bizarre fashion choices always caught everyone's attention." },
+  { en: "take risks/chances", vi: "liều; mạo hiểm", pos: "v", ipa: "/teɪk rɪsks/ /tʃɑːnsɪz/", meaningEn: "to engage in activities with uncertain outcomes; to gamble or venture", synonyms: "gamble, venture, hazard", antonyms: "play it safe, avoid danger, minimize risk", wordFamily: "risk (n/v), risky (adj)", collocations: "take big risks, calculated risks, take a chance", example: "Entrepreneurs must be willing to take calculated risks to succeed." },
+  { en: "ever-changing", vi: "không ngừng thay đổi", pos: "adj", ipa: "/ˈevər ˈtʃeɪndʒɪŋ/", meaningEn: "constantly changing; always in a state of change", synonyms: "constantly changing, ever-evolving, dynamic", antonyms: "static, unchanging, stable", wordFamily: "change (v), ever (adv)", collocations: "ever-changing landscape, ever-changing market", example: "The ever-changing nature of technology requires continuous learning." },
+  { en: "ever-evolving", vi: "không ngừng phát triển", pos: "adj", ipa: "/ˈevər ɪˈvɒlvɪŋ/", meaningEn: "continuously developing or progressing", synonyms: "developing, progressing, dynamic", antonyms: "static, stagnant, unchanged", wordFamily: "evolve (v), evolution (n), ever (adv)", collocations: "ever-evolving field, ever-evolving industry", example: "Medicine is an ever-evolving discipline with new discoveries." },
+  { en: "ever-shifting", vi: "không ngừng biến đổi", pos: "adj", ipa: "/ˈevər ˈʃɪftɪŋ/", meaningEn: "constantly moving or changing position", synonyms: "changing, moving, unstable", antonyms: "fixed, stable, constant", wordFamily: "shift (v/n), ever (adv)", collocations: "ever-shifting sands, ever-shifting boundaries", example: "The ever-shifting priorities of the company confuse the staff." },
+  { en: "blow something out of proportion", vi: "làm to chuyện", pos: "v", ipa: "/bləʊ ˈsʌmθɪŋ aʊt əv prəˈpɔːrʃən/", meaningEn: "to exaggerate the importance or seriousness of something", synonyms: "exaggerate, overstate, magnify", antonyms: "downplay, minimize, understate", wordFamily: "blow (v), proportion (n)", collocations: "blow out of proportion, blown out of proportion", example: "The media often blows minor incidents out of proportion." },
+  { en: "brain drain/human capital flight", vi: "chảy máu chất xám", pos: "n", ipa: "/breɪn dreɪn/ /ˈhjuːmən ˈkæpɪtəl flaɪt/", meaningEn: "the emigration of highly trained or intelligent people from a country", synonyms: "talent drain, skilled migration, intellectual exodus", antonyms: "brain gain, talent immigration", wordFamily: "brain (n), drain (n/v)", collocations: "brain drain problem, prevent brain drain", example: "Many developing nations face severe brain drain as professionals emigrate." },
+  { en: "higher education/tertiary education", vi: "giáo dục đại học", pos: "n", ipa: "/ˈhaɪər ˌedʒuˈkeɪʃən/ /ˈtɜːʃəri/", meaningEn: "education at university or college level, beyond secondary school", synonyms: "university education, post-secondary education, college", antonyms: "primary education, secondary education", wordFamily: "educate (v), education (n), educational (adj)", collocations: "higher education system, access to higher education, higher education institutions", example: "Many countries are increasing investment in higher education." },
+  { en: "hinder the growth/development", vi: "cản trở sự phát triển", pos: "v", ipa: "/ˈhɪndər ðə ɡroʊθ əv dɪˈveləpmənt/", meaningEn: "to create obstacles or slow down progress and expansion", synonyms: "obstruct, impede, delay", antonyms: "facilitate, promote, accelerate", wordFamily: "hinder (v), hindrance (n)", collocations: "hinder progress, hinder development, hinder growth", example: "Lack of funding hinders the development of new technologies." },
+  { en: "retain something", vi: "giữ lại; duy trì", pos: "v", ipa: "/rɪˈteɪn ˈsʌmθɪŋ/", meaningEn: "to keep, maintain, or continue to have something", synonyms: "keep, maintain, hold", antonyms: "lose, release, abandon", wordFamily: "retain (v), retention (n), retentive (adj)", collocations: "retain information, employee retention, retain control", example: "The company focuses on retaining its best employees." },
+  { en: "enact/adopt a policy", vi: "ban hành chính sách", pos: "v", ipa: "/ɪˈnækt/ /əˈdɒpt ə ˈpɒlɪsi/", meaningEn: "to officially establish or put into effect a new law or policy", synonyms: "establish, implement, introduce", antonyms: "repeal, abolish, reject", wordFamily: "enact (v), act (n), policy (n)", collocations: "enact legislation, adopt policy, enact law", example: "The government enacted strict environmental protection policies." },
+  { en: "migrate from X to Y", vi: "di cư", pos: "v", ipa: "/maɪˈɡreɪt frɒm tə/", meaningEn: "to move from one place or country to another, usually for work or better life", synonyms: "relocate, move, emigrate", antonyms: "stay, remain, settle", wordFamily: "migrate (v), migration (n), migrant (n)", collocations: "migrate to cities, migrate for work, migration patterns", example: "Many workers migrate from rural areas to urban centers." },
+  { en: "emigrate from X to Y", vi: "rời khỏi nước mình", pos: "v", ipa: "/ˈemɪɡreɪt frɒm tə/", meaningEn: "to leave one's native country to settle permanently in another", synonyms: "leave, depart, migrate away", antonyms: "immigrate, settle, remain", wordFamily: "emigrate (v), emigration (n), emigrant (n)", collocations: "emigrate to Canada, emigrate for opportunity, emigration rates", example: "Millions emigrated from Europe to America in the 19th century." },
+  { en: "immigrate into X", vi: "nhập cư vào", pos: "v", ipa: "/ˈɪmɪɡreɪt ˈɪntuː/", meaningEn: "to come to a foreign country and settle there permanently", synonyms: "settle, relocate, migrate to", antonyms: "emigrate, leave, depart", wordFamily: "immigrate (v), immigration (n), immigrant (n)", collocations: "immigrate to the US, immigration policy, immigrant communities", example: "Her family immigrated to Australia seeking better opportunities." },
+  { en: "praise/compliment", vi: "lời khen", pos: "n/v", ipa: "/preɪz/ /ˈkɒmplɪment/", meaningEn: "to express approval or admiration for someone or something", synonyms: "acclaim, commend, applaud", antonyms: "criticize, condemn, censure", wordFamily: "praise (n/v), praiseworthy (adj)", collocations: "praise efforts, receive praise, words of praise", example: "The teacher praised the students for their outstanding project." },
+  { en: "exalt someone", vi: "ca ngợi", pos: "v", ipa: "/ɪɡˈzɔːlt ˈsʌmwʌn/", meaningEn: "to praise highly or raise someone to a higher rank or position", synonyms: "elevate, glorify, honor", antonyms: "demote, degrade, humble", wordFamily: "exalt (v), exaltation (n), exalted (adj)", collocations: "exalt someone's achievements, exalted position", example: "The nation exalted their war heroes with parades and honors." },
+  { en: "moral", vi: "đạo đức (quan niệm cá nhân)", pos: "adj/n", ipa: "/ˈmɒrəl/", meaningEn: "concerning principles of right and wrong behavior; a lesson from a story", synonyms: "ethical, principled, lesson", antonyms: "immoral, unethical, amoral", wordFamily: "morality (n), moralize (v), morally (adv)", collocations: "moral values, moral principles, moral of the story", example: "The children learned important moral lessons from the fable." },
+  { en: "ethical", vi: "đạo đức (chuẩn mực xã hội)", pos: "adj", ipa: "/ˈeθɪkəl/", meaningEn: "relating to moral principles and standards accepted by society", synonyms: "moral, principled, virtuous", antonyms: "unethical, immoral, dishonest", wordFamily: "ethics (n), ethic (n), ethically (adv)", collocations: "ethical standards, ethical guidelines, ethical practices", example: "The company maintains high ethical standards in all operations." },
+  { en: "work ethics", vi: "đạo đức nghề nghiệp", pos: "n", ipa: "/wɜːk ˈeθɪks/", meaningEn: "moral principles governing conduct in the workplace", synonyms: "professional conduct, work standards, integrity", antonyms: "unethical conduct, dishonest practices", wordFamily: "ethics (n), ethical (adj), work (n/v)", collocations: "strong work ethics, poor work ethics, maintain work ethics", example: "His strong work ethics earned him respect from colleagues." },
+  { en: "come to someone's defense", vi: "bênh vực ai", pos: "v", ipa: "/kʌm tə ˈsʌmwʌnz dɪˈfens/", meaningEn: "to support, protect, or argue in favor of someone", synonyms: "defend, support, protect", antonyms: "attack, betray, criticize", wordFamily: "defense (n), defend (v), defensive (adj)", collocations: "come to defense, come to someone's aid", example: "Her friends came to her defense when she was unfairly criticized." },
+  { en: "plagued with something", vi: "bị hành hạ bởi", pos: "adj", ipa: "/pleɪɡd wɪð ˈsʌmθɪŋ/", meaningEn: "suffering from or afflicted by something repeatedly", synonyms: "troubled by, beset by, tormented by", antonyms: "free from, unaffected by", wordFamily: "plague (n/v), plagued (adj)", collocations: "plagued by disease, plagued with problems, plagued by doubts", example: "The region was plagued with drought for three consecutive years." },
+  { en: "eccentric", vi: "lập dị", pos: "adj", ipa: "/ɪkˈsentrɪk/", meaningEn: "behaving in an unusual or unconventional way; departing from norms", synonyms: "odd, unconventional, quirky", antonyms: "conventional, normal, typical", wordFamily: "eccentricity (n), eccentrically (adv)", collocations: "eccentric behavior, eccentric personality, eccentric style", example: "Her eccentric fashion sense made her stand out in the crowd." },
+  { en: "take something seriously", vi: "coi trọng", pos: "v", ipa: "/teɪk ˈsʌmθɪŋ ˈsɪəriəsli/", meaningEn: "to treat something as important or to view it with seriousness", synonyms: "value, prioritize, consider important", antonyms: "ignore, dismiss, downplay", wordFamily: "serious (adj), seriousness (n), seriously (adv)", collocations: "take seriously, seriously consider, take threat seriously", example: "The government finally took the climate crisis seriously." },
+  { en: "take something lightly", vi: "xem nhẹ", pos: "v", ipa: "/teɪk ˈsʌmθɪŋ ˈlaɪtli/", meaningEn: "to not treat something as important or to regard it casually", synonyms: "downplay, minimize, disregard", antonyms: "prioritize, take seriously, emphasize", wordFamily: "light (adj), lightly (adv), lighten (v)", collocations: "take lightly, not take lightly, took lightly", example: "You shouldn't take these warnings lightly; they're important." },
+  { en: "transcend something", vi: "vượt lên trên", pos: "v", ipa: "/trænˈsend ˈsʌmθɪŋ/", meaningEn: "to go beyond the limits of something; to surpass or exceed", synonyms: "exceed, surpass, go beyond", antonyms: "remain within, conform to, stay below", wordFamily: "transcend (v), transcendent (adj), transcendence (n)", collocations: "transcend boundaries, transcend limitations, transcend differences", example: "Her talent transcends the boundaries of traditional art." },
+  { en: "sustain something", vi: "duy trì", pos: "v", ipa: "/səˈsteɪn ˈsʌmθɪŋ/", meaningEn: "to maintain, continue, or uphold something over time", synonyms: "maintain, uphold, continue", antonyms: "abandon, discontinue, stop", wordFamily: "sustain (v), sustainable (adj), sustenance (n)", collocations: "sustain growth, sustain interest, sustain efforts", example: "The organization works to sustain biodiversity in the ecosystem." },
+  { en: "sustain an injury", vi: "bị thương", pos: "v", ipa: "/səˈsteɪn ən ˈɪndʒəri/", meaningEn: "to receive or suffer an injury or wound", synonyms: "suffer, receive, incur", antonyms: "heal, recover, escape", wordFamily: "sustain (v), injury (n), injure (v)", collocations: "sustain injuries, sustain wounds, sustain damage", example: "The athlete sustained a serious injury during the competition." }
+];
+
+const N = WORDS.length;
+
+// ============ AUDIO (Web Audio API) ============
+let audioCtx;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function playSound(type) {
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    if (type === 'correct') {
+      osc.frequency.value = 523; osc.type = 'sine';
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.3);
+    } else if (type === 'wrong') {
+      osc.frequency.value = 200; osc.type = 'square';
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.4);
+    } else if (type === 'complete') {
+      osc.frequency.value = 440; osc.type = 'sine';
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      const osc2 = ctx.createOscillator();
+      osc2.connect(gain); osc2.frequency.value = 660; osc2.type = 'sine';
+      osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.2);
+      osc2.start(ctx.currentTime + 0.2); osc2.stop(ctx.currentTime + 0.5);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+    }
+  } catch(e) {}
+}
+
+function createFireworks(x, y) {
+  const colors = ['#4ade80', '#22c55e', '#16a34a', '#86efac', '#bbf7d0'];
+  const particleCount = 30;
+  
+  for (let i = 0; i < particleCount; i++) {
+    const angle = (Math.PI * 2 * i) / particleCount;
+    const velocity = 4 + Math.random() * 4;
+    const tx = Math.cos(angle) * velocity * 100;
+    const ty = Math.sin(angle) * velocity * 100;
+    
+    const particle = document.createElement('div');
+    particle.className = 'firework';
+    particle.style.left = x + 'px';
+    particle.style.top = y + 'px';
+    particle.style.width = '8px';
+    particle.style.height = '8px';
+    particle.style.borderRadius = '50%';
+    particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    particle.style.setProperty('--tx', tx + 'px');
+    particle.style.setProperty('--ty', ty + 'px');
+    particle.style.boxShadow = '0 0 10px ' + particle.style.backgroundColor;
+    document.body.appendChild(particle);
+    
+    setTimeout(() => particle.remove(), 800);
+  }
+
+  // Sparkles
+  for (let i = 0; i < 15; i++) {
+    setTimeout(() => {
+      const sparkle = document.createElement('div');
+      sparkle.className = 'sparkle';
+      sparkle.style.left = (x + (Math.random() - 0.5) * 200) + 'px';
+      sparkle.style.top = (y + (Math.random() - 0.5) * 200) + 'px';
+      sparkle.style.width = '4px';
+      sparkle.style.height = '4px';
+      sparkle.style.borderRadius = '50%';
+      sparkle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      sparkle.style.boxShadow = '0 0 6px ' + sparkle.style.backgroundColor;
+      document.body.appendChild(sparkle);
+      
+      setTimeout(() => sparkle.remove(), 1000);
+    }, i * 30);
+  }
+}
+
+// ============ GAME STATE ============
+let currentPart = 0;
+let currentQ = 0;
+let score = 0;
+let streak = 0;
+let maxStreak = 0;
+let wrongWords = [];
+let partQuestions = [];
+let answered = false;
+let timerInterval = null;
+let timeLeft = 0;
+let partScores = [0,0,0,0];
+let partCompleted = [false,false,false,false];
+
+const defaultConfig = {
+  game_title: "TỪ MỚI LISTENING 1A, READING 2A",
+  background_color: "#0f172a",
+  surface_color: "#1e293b",
+  text_color: "#e2e8f0",
+  primary_color: "#6366f1",
+  accent_color: "#22c55e",
+  font_family: "Be Vietnam Pro",
+  font_size: 16
+};
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function showToast(msg, type) {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.style.background = type === 'correct' ? 'rgba(34,197,94,0.9)' : type === 'wrong' ? 'rgba(239,68,68,0.9)' : 'rgba(99,102,241,0.9)';
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 2000);
+}
+
+// ============ GENERATE QUESTIONS ============
+function genPart1() {
+  // Multiple choice: Vietnamese meaning → choose English
+  return shuffle(WORDS).map(w => {
+    const wrong = shuffle(WORDS.filter(x => x.en !== w.en)).slice(0, 3);
+    const options = shuffle([w, ...wrong]);
+    return { word: w, type: 'mc', prompt: `(${w.pos}) ${w.vi}`, options: options.map(o => o.en), answer: w.en };
+  });
+}
+
+function genPart2() {
+  // Fill in the blank: Vietnamese → type English
+  return shuffle(WORDS).map(w => ({
+    word: w, type: 'fill', prompt: `(${w.pos}) ${w.vi}`, answer: w.en
+  }));
+}
+
+function genPart3() {
+  // Mixed: random mc or fill
+  return shuffle(WORDS).map(w => {
+    const isMc = Math.random() > 0.5;
+    if (isMc) {
+      const wrong = shuffle(WORDS.filter(x => x.en !== w.en)).slice(0, 3);
+      const options = shuffle([w, ...wrong]);
+      return { word: w, type: 'mc', prompt: `(${w.pos}) ${w.vi}`, options: options.map(o => o.en), answer: w.en };
+    } else {
+      return { word: w, type: 'fill', prompt: `(${w.pos}) ${w.vi}`, answer: w.en };
+    }
+  });
+}
+
+function genPart4() {
+  // English meaning → choose English word
+  return shuffle(WORDS).map(w => {
+    const wrong = shuffle(WORDS.filter(x => x.en !== w.en)).slice(0, 3);
+    const options = shuffle([w, ...wrong]);
+    return { word: w, type: 'mc', prompt: w.meaningEn, options: options.map(o => o.en), answer: w.en };
+  });
+}
+
+// ============ SCREENS ============
+window.showMenu = function() {
+  clearTimer();
+  document.getElementById('menuBtn').style.display = 'none';
+  const config = defaultConfig;
+  const title = config.game_title || defaultConfig.game_title;
+
+  const parts = [
+    { num: 1, title: "Multiple Choice", desc: "Nghĩa tiếng Việt → Chọn từ tiếng Anh", icon: "list", color: "#6366f1" },
+    { num: 2, title: "Fill in the Blank", desc: "Nghĩa tiếng Việt → Nhập từ tiếng Anh", icon: "edit-3", color: "#8b5cf6" },
+    { num: 3, title: "Mixed Mode", desc: "Trộn trắc nghiệm + điền từ", icon: "shuffle", color: "#a78bfa" },
+    { num: 4, title: "Final Test", desc: "Nghĩa tiếng Anh → Chọn từ đúng", icon: "award", color: "#c084fc" }
+  ];
+
+  document.getElementById('screen').innerHTML = `
+    <div class="fade-in" style="max-width:640px;margin:0 auto;padding:40px 20px;">
+      <div style="text-align:center;margin-bottom:40px;">
+        <div style="font-size:13px;color:#818cf8;font-weight:600;letter-spacing:2px;margin-bottom:8px;">IELTS VOCABULARY GAME</div>
+        <h1 id="mainTitle" style="font-size:28px;font-weight:800;background:linear-gradient(135deg,#a5b4fc,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px;">${title}</h1>
+        <div style="color:#94a3b8;font-size:15px;">${N} từ vựng · 4 phần luyện tập · 🎉 Pháo hoa khi trả lời đúng</div>
+      </div>
+
+      <div style="display:grid;gap:16px;margin-bottom:32px;">
+        ${parts.map(p => `
+          <div class="part-card card-hover" onclick="startPart(${p.num})" style="display:flex;align-items:center;gap:16px;transition:all 0.3s;">
+            <div style="width:48px;height:48px;border-radius:12px;background:${p.color}20;display:flex;align-items:center;justify-content:center;">
+              <i data-lucide="${p.icon}" style="width:22px;height:22px;color:${p.color}"></i>
+            </div>
+            <div style="flex:1;">
+              <div style="font-weight:700;font-size:16px;">Part ${p.num}: ${p.title}</div>
+              <div style="color:#94a3b8;font-size:13px;margin-top:2px;">${p.desc}</div>
+            </div>
+            ${partCompleted[p.num-1] ? `<div style="color:#22c55e;font-size:13px;font-weight:600;">${partScores[p.num-1]}/${N} ✓</div>` : '<i data-lucide="chevron-right" style="width:20px;height:20px;color:#475569"></i>'}
+            <span class="part-num">${p.num}</span>
+          </div>
+        `).join('')}
+        
+        <div class="part-card card-hover" onclick="showVocabularyBank()" style="display:flex;align-items:center;gap:16px;border-color:#10b981 !important;transition:all 0.3s;">
+          <div style="width:48px;height:48px;border-radius:12px;background:#10b98120;display:flex;align-items:center;justify-content:center;">
+            <i data-lucide="book" style="width:22px;height:22px;color:#10b981"></i>
+          </div>
+          <div style="flex:1;">
+            <div style="font-weight:700;font-size:16px;">📚 Vocabulary Bank</div>
+            <div style="color:#94a3b8;font-size:13px;margin-top:2px;">Browse all ${N} words with IPA, meanings & examples</div>
+          </div>
+          <i data-lucide="chevron-right" style="width:20px;height:20px;color:#475569"></i>
+          <span class="part-num" style="color:#10b98140;">📚</span>
+        </div>
+      </div>
+
+      ${partCompleted.some(x=>x) ? `
+        <div class="card-glass" style="padding:20px;text-align:center;background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.3) !important;">
+          <div style="font-size:14px;color:#94a3b8;margin-bottom:8px;">🏆 Tổng điểm</div>
+          <div style="font-size:32px;font-weight:800;color:#4ade80;">${partScores.reduce((a,b)=>a+b,0)} / ${N*4}</div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+  lucide.createIcons();
+}
+
+window.startPart = function(num) {
+  currentPart = num;
+  currentQ = 0;
+  score = 0;
+  streak = 0;
+  maxStreak = 0;
+  wrongWords = [];
+  answered = false;
+
+  if (num === 1) partQuestions = genPart1();
+  else if (num === 2) partQuestions = genPart2();
+  else if (num === 3) partQuestions = genPart3();
+  else partQuestions = genPart4();
+
+  // Validation
+  if (partQuestions.length !== N) {
+    showToast(`Lỗi: ${partQuestions.length} câu ≠ ${N} từ`, 'wrong');
+    return;
+  }
+
+  document.getElementById('menuBtn').style.display = 'flex';
+  showQuestion();
+}
+
+function clearTimer() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+function startTimer(seconds) {
+  clearTimer();
+  timeLeft = seconds;
+  const bar = document.getElementById('timerFill');
+  if (!bar) return;
+  bar.style.width = '100%';
+  timerInterval = setInterval(() => {
+    timeLeft -= 0.1;
+    if (bar) bar.style.width = Math.max(0, (timeLeft / seconds) * 100) + '%';
+    if (timeLeft <= 0) {
+      clearTimer();
+      if (!answered) handleTimeout();
+    }
+  }, 100);
+}
+
+function handleTimeout() {
+  answered = true;
+  streak = 0;
+  const q = partQuestions[currentQ];
+  if (!wrongWords.includes(q.word.en)) wrongWords.push(q.word.en);
+  playSound('wrong');
+
+  // Mark correct answer
+  if (q.type === 'mc') {
+    document.querySelectorAll('.option-btn').forEach(btn => {
+      btn.disabled = true;
+      if (btn.dataset.val === q.answer) btn.classList.add('correct');
+    });
+  } else {
+    const inp = document.getElementById('fillInput');
+    if (inp) { inp.disabled = true; inp.classList.add('wrong'); }
+  }
+
+  showExplanation(q, false);
+  showNextBtn();
+}
+
+function showQuestion() {
+  answered = false;
+  clearTimer();
+  const q = partQuestions[currentQ];
+  const progress = ((currentQ) / N) * 100;
+  const partNames = ['', 'MULTIPLE CHOICE', 'FILL IN THE BLANK', 'MIXED MODE', 'FINAL TEST'];
+
+  let questionHTML = '';
+  if (q.type === 'mc') {
+    questionHTML = `
+      <div class="card-glass" style="padding:28px;margin-bottom:8px;">
+        <div style="font-size:20px;font-weight:700;color:#f1f5f9;line-height:1.5;margin-bottom:24px;">👉 ${q.prompt}</div>
+        <div style="display:grid;gap:12px;" id="optionsContainer">
+          ${q.options.map((o, i) => `
+            <button class="option-btn" data-val="${o}" onclick="handleMC(this, '${o.replace(/'/g, "\\'")}')">
+              <span style="font-weight:700;color:#818cf8;margin-right:10px;">${'ABCD'[i]}.</span> ${o}
+            </button>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  } else {
+    questionHTML = `
+      <div class="card-glass" style="padding:28px;margin-bottom:8px;">
+        <div style="font-size:20px;font-weight:700;color:#f1f5f9;line-height:1.5;margin-bottom:24px;">👉 ${q.prompt}</div>
+        <div style="margin-bottom:20px;">
+          <input type="text" id="fillInput" class="text-input" placeholder="Nhập từ tiếng Anh..." autocomplete="off" onkeydown="if(event.key==='Enter')handleFill()">
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn-primary" onclick="handleFill()" id="submitBtn">✅ Submit</button>
+          <button class="btn-secondary" onclick="handleSkip()">⏭ Skip</button>
+          <button class="btn-secondary" onclick="handleShowAnswer()">💡 Show Answer</button>
+        </div>
+      </div>
+    `;
+  }
+
+  document.getElementById('screen').innerHTML = `
+    <div class="fade-in" style="max-width:600px;margin:0 auto;padding:60px 20px 40px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-size:12px;color:#818cf8;font-weight:600;letter-spacing:1px;">PART ${currentPart}: ${partNames[currentPart]}</div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          ${streak >= 3 ? `<span class="streak-badge">🔥 ${streak}</span>` : ''}
+          <span style="font-size:14px;color:#94a3b8;font-weight:600;">🎯 ${score}/${N}</span>
+        </div>
+      </div>
+      <div class="progress-bar" style="margin-bottom:8px;">
+        <div class="progress-fill" style="width:${progress}%"></div>
+      </div>
+      <div class="timer-bar" style="margin-bottom:24px;">
+        <div class="timer-fill" id="timerFill" style="width:100%"></div>
+      </div>
+      <div style="font-size:13px;color:#64748b;margin-bottom:20px;">Câu ${currentQ + 1} / ${N}</div>
+
+      <div style="display:grid;gap:16px;margin-bottom:32px;" id="questionCard">
+        ${questionHTML}
+        <div id="explanationArea"></div>
+        <div id="nextBtnArea"></div>
+      </div>
+    </div>
+  `;
+  lucide.createIcons();
+  startTimer(q.type === 'fill' ? 30 : 20);
+  if (q.type === 'fill') setTimeout(() => document.getElementById('fillInput')?.focus(), 100);
+}
+
+window.handleMC = function(btn, val) {
+  if (answered) return;
+  answered = true;
+  clearTimer();
+  const q = partQuestions[currentQ];
+  const isCorrect = val === q.answer;
+
+  document.querySelectorAll('.option-btn').forEach(b => {
+    b.disabled = true;
+    if (b.dataset.val === q.answer) b.classList.add('correct');
+    else if (b === btn && !isCorrect) b.classList.add('wrong');
+  });
+
+  if (isCorrect) {
+    score++; streak++; if (streak > maxStreak) maxStreak = streak;
+    playSound('correct');
+    btn.classList.add('pulse');
+    
+    // Get button position for fireworks
+    const rect = btn.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    createFireworks(centerX, centerY);
+    
+    // Success toast
+    showToast('🎉 Chính xác!', 'correct');
+  } else {
+    streak = 0;
+    if (!wrongWords.includes(q.word.en)) wrongWords.push(q.word.en);
+    playSound('wrong');
+    btn.classList.add('shake');
+    showToast('❌ Chưa đúng', 'wrong');
+  }
+
+  showExplanation(q, isCorrect);
+  showNextBtn();
+}
+
+window.handleFill = function() {
+  if (answered) return;
+  const inp = document.getElementById('fillInput');
+  const val = inp.value.trim().toLowerCase();
+  if (!val) return;
+
+  answered = true;
+  clearTimer();
+  const q = partQuestions[currentQ];
+  const isCorrect = val === q.answer.toLowerCase();
+
+  if (isCorrect) {
+    inp.classList.add('correct');
+    score++; streak++; if (streak > maxStreak) maxStreak = streak;
+    playSound('correct');
+    
+    // Get input position for fireworks
+    const rect = inp.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    createFireworks(centerX, centerY);
+    
+    showToast('🎉 Chính xác!', 'correct');
+  } else {
+    inp.classList.add('wrong');
+    inp.disabled = true;
+    streak = 0;
+    if (!wrongWords.includes(q.word.en)) wrongWords.push(q.word.en);
+    playSound('wrong');
+    showToast('❌ Chưa đúng', 'wrong');
+  }
+
+  showExplanation(q, isCorrect);
+  showNextBtn();
+}
+
+window.handleSkip = function() {
+  if (answered) return;
+  answered = true;
+  clearTimer();
+  streak = 0;
+  const q = partQuestions[currentQ];
+  if (!wrongWords.includes(q.word.en)) wrongWords.push(q.word.en);
+  showExplanation(q, false);
+  showNextBtn();
+}
+
+window.handleShowAnswer = function() {
+  if (answered) return;
+  answered = true;
+  clearTimer();
+  streak = 0;
+  const q = partQuestions[currentQ];
+  if (!wrongWords.includes(q.word.en)) wrongWords.push(q.word.en);
+  const inp = document.getElementById('fillInput');
+  if (inp) { inp.value = q.answer; inp.disabled = true; inp.classList.add('correct'); }
+  showExplanation(q, false);
+  showNextBtn();
+}
+
+function showExplanation(q, isCorrect) {
+  const w = q.word;
+  document.getElementById('explanationArea').innerHTML = `
+    <div class="explanation-box fade-in">
+      <div style="font-weight:700;font-size:16px;margin-bottom:12px;color:${isCorrect ? '#4ade80' : '#f87171'};">
+        ${isCorrect ? '✅ Chính xác!' : '❌ Chưa đúng'}
+      </div>
+      <div style="margin-bottom:6px;"><span class="label">Đáp án:</span> <strong>${w.en}</strong></div>
+      <div style="margin-bottom:6px;"><span class="label">IPA:</span> <span class="ipa">${w.ipa}</span></div>
+      <div style="margin-bottom:6px;"><span class="label">Meaning:</span> ${w.meaningEn}</div>
+      <div style="margin-bottom:6px;"><span class="label">Synonyms:</span> ${w.synonyms}</div>
+      ${w.antonyms !== '—' ? `<div style="margin-bottom:6px;"><span class="label">Antonyms:</span> ${w.antonyms}</div>` : ''}
+      <div style="margin-bottom:6px;"><span class="label">Word family:</span> ${w.wordFamily || '—'}</div>
+      <div style="margin-bottom:6px;"><span class="label">Collocations:</span> ${w.collocations}</div>
+      <div style="margin-top:8px;padding:10px 14px;background:rgba(99,102,241,0.1);border-radius:8px;border-left:3px solid #6366f1;">
+        <span class="label">Example:</span><br>👉 <em>${w.example}</em>
+      </div>
+    </div>
+  `;
+}
+
+function showNextBtn() {
+  document.getElementById('nextBtnArea').innerHTML = `
+    <div style="margin-top:16px;display:flex;gap:10px;">
+      <button class="btn-primary" onclick="nextQuestion()" style="flex:1;">
+        ${currentQ < N - 1 ? 'Câu tiếp theo →' : '🏆 Xem kết quả'}
+      </button>
+    </div>
+  `;
+}
+
+window.nextQuestion = function() {
+  currentQ++;
+  if (currentQ >= N) {
+    showResult();
+  } else {
+    showQuestion();
+  }
+}
+
+function showResult() {
+  clearTimer();
+  partScores[currentPart - 1] = score;
+  partCompleted[currentPart - 1] = true;
+  playSound('complete');
+  document.getElementById('menuBtn').style.display = 'flex';
+
+  const pct = Math.round((score / N) * 100);
+  let grade = '🏆 Xuất sắc!';
+  let gradeColor = '#22c55e';
+  if (pct < 50) { grade = '📚 Cần ôn thêm'; gradeColor = '#ef4444'; }
+  else if (pct < 80) { grade = '💪 Khá tốt!'; gradeColor = '#eab308'; }
+
+  document.getElementById('screen').innerHTML = `
+    <div class="fade-in" style="max-width:600px;margin:0 auto;padding:60px 20px 40px;">
+      <div class="card-glass" style="padding:32px;text-align:center;">
+        <div style="font-size:48px;margin-bottom:8px;">${pct >= 80 ? '🎉' : pct >= 50 ? '👍' : '📖'}</div>
+        <h2 style="font-size:24px;font-weight:800;color:${gradeColor};margin-bottom:8px;">${grade}</h2>
+        <div style="font-size:40px;font-weight:800;color:#a5b4fc;margin-bottom:4px;">${score} / ${N}</div>
+        <div style="color:#94a3b8;font-size:14px;margin-bottom:20px;">${pct}% · Streak cao nhất: 🔥${maxStreak}</div>
+
+        ${wrongWords.length > 0 ? `
+          <div style="text-align:left;margin-top:20px;">
+            <div style="font-weight:700;color:#f87171;margin-bottom:10px;">❌ Từ cần ôn lại (${wrongWords.length}):</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+              ${wrongWords.map(w => `<span class="result-word wrong-word">${w}</span>`).join('')}
+            </div>
+          </div>
+        ` : '<div style="color:#4ade80;font-weight:600;margin-top:12px;">🎯 Bạn đã trả lời đúng tất cả!</div>'}
+
+        <div style="display:flex;gap:10px;margin-top:28px;flex-wrap:wrap;justify-content:center;">
+          <button class="btn-primary" onclick="startPart(${currentPart})">🔄 Làm lại Part ${currentPart}</button>
+          <button class="btn-secondary" onclick="showMenu()">🏠 Menu chính</button>
+          ${currentPart < 4 ? `<button class="btn-secondary" onclick="startPart(${currentPart + 1})">Part ${currentPart + 1} →</button>` : ''}
+        </div>
+      </div>
+    </div>
+  `;
+  lucide.createIcons();
+}
+
+window.showVocabularyBank = function() {
+  clearTimer();
+  document.getElementById('menuBtn').style.display = 'flex';
+  window.searchQuery = '';
+  window.selectedWord = null;
+
+  window.renderBank = function() {
+    const filtered = WORDS.filter(w => w.en.toLowerCase().includes(window.searchQuery.toLowerCase()) || w.vi.toLowerCase().includes(window.searchQuery.toLowerCase()));
+
+    let html = `
+      <div class="fade-in" style="max-width:900px;margin:0 auto;padding:60px 20px 40px;">
+        <div style="margin-bottom:24px;">
+          <h2 style="font-size:24px;font-weight:800;color:#a5b4fc;margin-bottom:8px;">📚 Vocabulary Bank</h2>
+          <div style="color:#94a3b8;margin-bottom:16px;">Browse all ${N} words with full details</div>
+          <input type="text" id="searchInput" placeholder="Search by English or Vietnamese..." value="${window.searchQuery}"
+            class="text-input" style="width:100%;margin-bottom:16px;"
+            onkeyup="window.updateBankDisplay()">
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));gap:12px;">
+          ${filtered.map((w, i) => `
+            <div class="card-glass" onclick="selectWordDetail(${WORDS.indexOf(w)})" style="padding:16px;cursor:pointer;transition:all 0.2s;border-color:${window.selectedWord === WORDS.indexOf(w) ? '#6366f1' : 'rgba(99,102,241,0.2)'} !important;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                <div>
+                  <div style="font-weight:800;color:#f1f5f9;font-size:18px;">${w.en}</div>
+                  <div style="color:#818cf8;font-size:12px;margin-top:2px;">${w.pos}</div>
+                </div>
+                <button class="btn-secondary audio-btn" style="padding:6px 10px !important;border:none;background:rgba(99,102,241,0.2) !important;cursor:pointer;" onclick="event.stopPropagation(); playWordAudio('${w.en}', this)">
+                  🔊
+                </button>
+              </div>
+              <div style="color:#a5b4fc;font-size:11px;margin-bottom:6px;font-family:'JetBrains Mono',monospace;">${w.ipa}</div>
+              <div style="color:#cbd5e1;font-size:13px;line-height:1.4;">${w.vi}</div>
+            </div>
+          `).join('')}
+        </div>
+
+        ${window.selectedWord !== null ? `
+          <div class="card-glass" style="padding:24px;margin-top:24px;border-color:#6366f1 !important;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+              <h3 style="font-size:20px;font-weight:800;color:#f1f5f9;">${WORDS[window.selectedWord].en}</h3>
+              <button class="btn-secondary audio-btn" style="padding:8px 14px !important;border:none;" onclick="playWordAudio('${WORDS[window.selectedWord].en}', this)">🔊 Phát âm</button>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div>
+                <div style="color:#818cf8;font-weight:600;margin-bottom:4px;">Part of speech</div>
+                <div style="color:#cbd5e1;">${WORDS[window.selectedWord].pos}</div>
+              </div>
+              <div>
+                <div style="color:#818cf8;font-weight:600;margin-bottom:4px;">IPA</div>
+                <div style="color:#a78bfa;font-family:'JetBrains Mono',monospace;font-size:13px;">${WORDS[window.selectedWord].ipa}</div>
+              </div>
+              <div>
+                <div style="color:#818cf8;font-weight:600;margin-bottom:4px;">Vietnamese</div>
+                <div style="color:#cbd5e1;">${WORDS[window.selectedWord].vi}</div>
+              </div>
+              <div>
+                <div style="color:#818cf8;font-weight:600;margin-bottom:4px;">English meaning</div>
+                <div style="color:#cbd5e1;">${WORDS[window.selectedWord].meaningEn}</div>
+              </div>
+            </div>
+
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(99,102,241,0.2);">
+              <div style="color:#818cf8;font-weight:600;margin-bottom:8px;">📖 Example</div>
+              <div style="color:#cbd5e1;line-height:1.6;padding:12px;background:rgba(15,23,42,0.4);border-radius:8px;border-left:3px solid #6366f1;">
+                ${WORDS[window.selectedWord].example}
+              </div>
+            </div>
+
+            <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+              <div>
+                <div style="color:#818cf8;font-weight:600;margin-bottom:8px;">✨ Synonyms</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                  ${WORDS[window.selectedWord].synonyms.split(',').map(s => `<span style="background:rgba(168,85,247,0.15);color:#d8b4fe;padding:4px 10px;border-radius:6px;font-size:12px;">${s.trim()}</span>`).join('')}
+                </div>
+              </div>
+              ${WORDS[window.selectedWord].antonyms !== '—' ? `
+                <div>
+                  <div style="color:#818cf8;font-weight:600;margin-bottom:8px;">❌ Antonyms</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                    ${WORDS[window.selectedWord].antonyms.split(',').map(a => `<span style="background:rgba(239,68,68,0.15);color:#fca5a5;padding:4px 10px;border-radius:6px;font-size:12px;">${a.trim()}</span>`).join('')}
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+
+            <div style="margin-top:16px;">
+              <div style="color:#818cf8;font-weight:600;margin-bottom:8px;">🔗 Collocations</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                ${WORDS[window.selectedWord].collocations.split(',').map(c => `<span style="background:rgba(34,197,94,0.15);color:#86efac;padding:6px 12px;border-radius:6px;font-size:12px;border:1px solid rgba(34,197,94,0.3);">${c.trim()}</span>`).join('')}
+              </div>
+            </div>
+
+            <div style="margin-top:16px;">
+              <div style="color:#818cf8;font-weight:600;margin-bottom:8px;">👨‍👩‍👧‍👦 Word family</div>
+              <div style="color:#cbd5e1;">${WORDS[window.selectedWord].wordFamily || '—'}</div>
+            </div>
+
+            <div style="margin-top:16px;display:flex;gap:10px;">
+              <button class="btn-secondary" onclick="window.selectedWord = null; window.renderBank()">← Back</button>
+            </div>
+          </div>
+        ` : ''}
+
+        <div style="margin-top:24px;text-align:center;">
+          <button class="btn-primary" onclick="showMenu()">🏠 Back to Menu</button>
+        </div>
+      </div>
+    `;
+    document.getElementById('screen').innerHTML = html;
+    document.getElementById('searchInput')?.focus();
+    lucide.createIcons();
+  }
+
+  window.updateBankDisplay = function() {
+    window.searchQuery = document.getElementById('searchInput')?.value || '';
+    window.renderBank();
+  };
+
+  window.selectWordDetail = function(idx) {
+    window.selectedWord = window.selectedWord === idx ? null : idx;
+    window.renderBank();
+  };
+
+  window.playWordAudio = function(word, buttonElement) {
+    // Clean the input text: remove parts of speech indicators and extra spaces
+    let cleanWord = word.replace(/^\([^)]+\)\s*/, '').trim(); // Remove (adj), (n), etc. at start
+    cleanWord = cleanWord.replace(/\([^)]+\)/g, '').trim(); // Remove any remaining parentheses
+    cleanWord = cleanWord.replace(/\//g, ' ').trim(); // Replace slashes with spaces for compound words
+
+    // Cancel any ongoing speech to prevent overlap
+    if ('speechSynthesis' in window) {
+      speechSynthesis.cancel();
+    }
+
+    // Add playing class to button for visual feedback
+    if (buttonElement) {
+      buttonElement.classList.add('playing');
+    }
+
+    // Create utterance
+    const utterance = new SpeechSynthesisUtterance(cleanWord);
+    utterance.lang = 'en-US'; // Use US English
+    utterance.rate = 0.9; // Slightly slower than default for clarity
+    utterance.pitch = 1.0; // Normal pitch
+
+    // Handle speech end
+    utterance.onend = function() {
+      // Remove playing class
+      if (buttonElement) {
+        buttonElement.classList.remove('playing');
+      }
+    };
+
+    // Handle speech error
+    utterance.onerror = function(event) {
+      console.error('Speech synthesis error:', event.error);
+      // Remove playing class on error
+      if (buttonElement) {
+        buttonElement.classList.remove('playing');
+      }
+      // Retry once if it fails (but not if interrupted)
+      if (event.error !== 'interrupted') {
+        setTimeout(() => {
+          if ('speechSynthesis' in window) {
+            speechSynthesis.cancel();
+            speechSynthesis.speak(utterance);
+          }
+        }, 100);
+      }
+    };
+
+    // Speak the word
+    if ('speechSynthesis' in window) {
+      speechSynthesis.speak(utterance);
+    } else {
+      console.warn('Speech synthesis not supported in this browser');
+      // Remove playing class if not supported
+      if (buttonElement) {
+        buttonElement.classList.remove('playing');
+      }
+    }
+  };
+
+  renderBank();
+}
+
+
+
+// Start
+showMenu();
+});
+</script>
+</body>
+</html>
